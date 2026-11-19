@@ -135,6 +135,17 @@ lease.
 order overflows, that is a pricing bug on their side — quote it as
 `rate_per_call` × calls before you escrow.
 
+### `DepositTooLarge` on `create_lease`
+
+**Cause:** the deposit fits in `i128` but exceeds `MAX_LEASE_DEPOSIT`
+(1,000,000,000,000 base units, so 100,000 XLM at seven decimals). `Overflow`
+means the multiplication does not fit; this means it fits and is still more than
+one lease is allowed to escrow.
+
+**Fix:** split the order into several leases of fewer calls each. The bound is
+deliberate: it caps what a single lease can put at risk, so raising it is a
+contract change, not a client setting.
+
 ### Your balance did not move but the lease exists
 
 **Cause:** the transaction was not sent. `stellar contract invoke` simulates by
